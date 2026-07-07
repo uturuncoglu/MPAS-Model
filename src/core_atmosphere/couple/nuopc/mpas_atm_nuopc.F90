@@ -311,7 +311,7 @@ contains
     mesh = ESMF_MeshCreate(filename=trim(mesh_atm), fileformat=ESMF_FILEFORMAT_ESMFMESH, elementDistgrid=Distgrid, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    !TODO: ESMF framework has bug to write high-order meshes in VTK format
+    !NOTE: ESMF framework has bug to write high-order meshes in VTK format but will work >= 9.0.0b13
     !call ESMF_MeshWriteVTK(mesh, filename="mpas_mesh", rc=rc)
     !if (ChkErr(rc,__LINE__,u_FILE_u)) return
 

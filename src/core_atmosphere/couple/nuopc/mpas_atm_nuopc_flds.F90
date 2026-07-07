@@ -128,8 +128,12 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_lwdn' , 'diag_physics', 'lwdnb', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_lwup' , 'diag_physics', 'lwupb', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_swdn' , 'diag_physics', 'swdnb', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_swup' , 'diag_physics', 'swupb', rc=rc)
+    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_rainc', 'diag_physics', 'rainncv', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_snowc', 'diag_physics', 'snowncv', rc=rc)
@@ -880,10 +884,6 @@ contains
           write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
        endif
        call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-
-       !TODO: ESMF framework has bug to write high-order meshes in VTK format
-       !call ESMF_FieldWriteVTK(lfield, 'export_'//trim(lfieldnamelist(n)), rc=rc)
-       !if (ChkErr(rc,__LINE__,u_FILE_u)) return
     enddo
 
     deallocate(lfieldnamelist)
