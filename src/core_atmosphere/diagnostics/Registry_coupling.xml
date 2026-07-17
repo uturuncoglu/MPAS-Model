@@ -1,0 +1,18 @@
+<var_struct name="diag" time_levs="1">
+
+        <var name="lwnetb"     type="real"     dimensions="nCells Time" units="W m^{-2}"
+	     description="all-sky net surface longwave radiation"/>
+
+        <var name="taux"       type="real"     dimensions="nCells Time" units="N m^{-2}"
+             description="surface zonal momentum flux"/>
+
+        <var name="tauy"       type="real"     dimensions="nCells Time" units="N m^{-2}"
+             description="surface meridional momentum flux"/>
+
+        <var name="rain_total" type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+	     description="average instantaneous liquid precipitation rate"/>
+
+        <var name="snow_total" type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+             description="average instantaneous frozen precipitation rate"/>
+
+</var_struct>

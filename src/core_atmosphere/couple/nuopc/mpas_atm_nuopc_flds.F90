@@ -60,7 +60,7 @@ module mpas_atm_nuopc_flds
      logical :: connected = .false.
   end type fldListType
 
-  integer, parameter :: fldsMax = 20
+  integer, parameter :: fldsMax = 30
   integer :: fldsToMPAS_num = 0
   integer :: fldsFrMPAS_num = 0
   type(fldListType) :: fldsToMPAS(fldsMax)
@@ -130,13 +130,21 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_lwup' , 'diag_physics', 'lwupb', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_lwnet', 'diag', 'lwnetb', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_swdn' , 'diag_physics', 'swdnb', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     !call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_swup' , 'diag_physics', 'swupb', rc=rc)
     !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_rainc', 'diag_physics', 'rainncv', rc=rc)
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_sen', 'diag_physics', 'hfx', scale_factor=-1.0d0, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_snowc', 'diag_physics', 'snowncv', rc=rc)
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_lat', 'diag_physics', 'lh', scale_factor=-1.0d0, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_evap', 'diag_physics', 'qfx', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_rain', 'diag', 'rain_total', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_snow', 'diag', 'snow_total', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     ! The ratios used to split net shortwave radiation is taken from CMEPS mediator
     ! Ref: https://github.com/NOAA-EMC/CMEPS/blob/fc8b9140e08465dcb5eab48056d4d5636c0e1716/mediator/med_phases_prep_ocn_mod.F90#L504
@@ -147,6 +155,10 @@ contains
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_swndf', 'diag_physics', 'swdnb', scale_factor=0.215d0, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_swvdf', 'diag_physics', 'swdnb', scale_factor=0.215d0, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_taux', 'diag', 'taux', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_tauy', 'diag', 'tauy', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Now advertise above export fields
@@ -485,7 +497,7 @@ contains
        end if
     end do
 
-    ! Custom calculation 
+    ! Custom calculations
     call calcHeight(exportState, domain, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 

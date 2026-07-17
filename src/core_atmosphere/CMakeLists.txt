@@ -309,6 +309,7 @@ set(ATMOSPHERE_CORE_DIAGNOSTIC_SOURCES
     mpas_isobaric_diagnostics.F
     mpas_pv_diagnostics.F
     mpas_soundings.F
+    mpas_coupling_diagnostics.F
 )
 
 list(TRANSFORM ATMOSPHERE_CORE_DIAGNOSTIC_SOURCES PREPEND diagnostics/)
