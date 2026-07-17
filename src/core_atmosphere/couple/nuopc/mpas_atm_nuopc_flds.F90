@@ -140,7 +140,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_lat', 'diag_physics', 'lh', scale_factor=-1.0d0, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_evap', 'diag_physics', 'qfx', rc=rc)
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_evap', 'diag_physics', 'qfx', scale_factor=-1.0d0, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_rain', 'diag', 'rain_total', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
