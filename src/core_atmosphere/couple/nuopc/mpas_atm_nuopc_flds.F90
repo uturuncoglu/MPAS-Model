@@ -104,17 +104,17 @@ contains
 
     ! export scalar
     ! set as constant in here but actually set in export_fields() routine later
-    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_z', 'const', 'n/a', add_offset=0.0d0, rc=rc) 
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_z', 'diag', 'hgt_lowest', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_u', 'diag', 'uReconstructZonal', level=1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_v', 'diag', 'uReconstructMeridional', level=1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_tbot', 'diag', 'theta', level=1, rc=rc)
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_tbot', 'diag', 'tmp_lowest', level=1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_pbot', 'diag', 'pressure', level=1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_shum', 'state', 'qv', level=1, rc=rc)
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_shum', 'diag', 'qv_lowest', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_dens', 'diag', 'rho', level=1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -497,16 +497,6 @@ contains
        end if
     end do
 
-    ! Custom calculations
-    call calcHeight(exportState, domain, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call getScalars(exportState, domain, 'Sa_shum', 'qv', rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call calcTemp(exportState, domain, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
 
   end subroutine export_fields
@@ -634,225 +624,6 @@ contains
     call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
 
   end subroutine import_fields
-
-  !===============================================================================
-
-  subroutine calcHeight(state, domain, rc) 
-
-    ! input/output variables
-    type(ESMF_State), intent(inout) :: state
-    type(domain_type), intent(in), pointer :: domain
-    integer, intent(out) :: rc
-
-    ! local variables
-    type(ESMF_Field) :: lfield
-    type(ESMF_StateItem_Flag) :: itemType
-    integer :: iCell, gCell, nCells, cell_offset
-    type(block_type), pointer :: block => null()
-    type(mpas_pool_type), pointer :: meshPool
-    integer, dimension(:), pointer :: nCellsArray
-    real(kind=rkind), dimension(:,:), pointer :: zGrid
-    real(ESMF_KIND_R8), dimension(:), pointer :: fldPtr
-    character(len=*), parameter :: subname=trim(modName)//':(calc_height)'
-    ! ----------------------------------------------
-
-    rc = ESMF_SUCCESS
-    call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
-
-    ! Check field
-    call ESMF_StateGet(state, itemName='Sa_z', itemType=itemType, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (itemType == ESMF_STATEITEM_FIELD) then
-       ! Get field
-       call ESMF_StateGet(state, itemName='Sa_z', field=lfield, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Query field pointer and initialize
-       call ESMF_FieldGet(lfield, farrayPtr=fldPtr, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Get geometric height of layer interfaces 
-       cell_offset = 0
-       block => domain % blocklist
-       do while (associated(block))
-          ! Get height of vertical layers
-          call mpas_pool_get_subpool(block % structs, 'mesh', meshPool)
-          call mpas_pool_get_dimension(meshPool, 'nCellsArray', nCellsArray)
-          nCells = nCellsArray(1)
-          call mpas_pool_get_array(meshPool, 'zgrid', zGrid)
-
-          ! Calculate level height
-          do iCell = 1, nCells
-             gCell = iCell + cell_offset
-             fldPtr(gCell) = dble(0.5*(zGrid(2,iCell) - zGrid(1,iCell)))
-          end do
-
-          ! Increment cell offset
-          cell_offset = cell_offset + nCells
-
-          ! Go to next block
-          block => block % next
-       end do
-
-       ! Init pointers
-       nullify(fldPtr)
-    end if
-
-    call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
-
-  end subroutine calcHeight
-
-  !===============================================================================
-
-  subroutine getScalars(state, domain, fnameExt, fnameInt, rc)
-
-    ! input/output variables
-    type(ESMF_State), intent(inout) :: state
-    type(domain_type), intent(in), pointer :: domain
-    character(len=*), intent(in) :: fnameExt
-    character(len=*), intent(in) :: fnameInt
-    integer, intent(out) :: rc
-
-    ! local variables
-    type(ESMF_Field) :: lfield
-    type(ESMF_StateItem_Flag) :: itemType
-    integer :: iCell, gCell, nCells, cell_offset
-    integer, pointer:: varIndx
-    type(block_type), pointer :: block => null()
-    type(mpas_pool_type), pointer :: meshPool
-    type(mpas_pool_type), pointer :: statePool
-    integer, dimension(:), pointer :: nCellsArray
-    real(kind=rkind), dimension(:,:,:), pointer :: scalars
-    real(ESMF_KIND_R8), dimension(:), pointer :: fldPtr
-    character(len=*), parameter :: subname=trim(modName)//':(getScalars)'
-    ! ----------------------------------------------
-
-    rc = ESMF_SUCCESS
-    call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
-
-    ! Check field
-    call ESMF_StateGet(state, itemName=trim(fnameExt), itemType=itemType, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (itemType == ESMF_STATEITEM_FIELD) then
-       ! Get field
-       call ESMF_StateGet(state, itemName=trim(fnameExt), field=lfield, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Query field pointer and initialize
-       call ESMF_FieldGet(lfield, farrayPtr=fldPtr, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Access to MPAS field
-       cell_offset = 0
-       block => domain % blocklist
-       do while (associated(block))
-          call mpas_pool_get_subpool(block % structs, 'mesh', meshPool)
-          call mpas_pool_get_dimension(meshPool, 'nCellsArray', nCellsArray)
-          nCells = nCellsArray(1)
-          call mpas_pool_get_subpool(block % structs, 'state', statePool)
-          call mpas_pool_get_dimension(statePool, 'index_'//trim(fnameInt), varIndx)
-          call mpas_pool_get_array(statePool, 'scalars', scalars, 1)
-
-          ! Fill pointer 
-          do iCell = 1, nCells
-             gCell = iCell + cell_offset
-             fldPtr(gCell) = dble(scalars(varIndx,1,iCell))
-          end do
-
-          ! Increment cell offset
-          cell_offset = cell_offset + nCells
-
-          ! Go to next block
-          block => block % next
-       end do
-
-       ! Custom calculations
-       if (trim(fnameInt) == 'qv') then
-          ! water mixing ratio (kg/kg) -> specific humidity (kg/kg)
-          fldPtr(:) = (fldPtr(:) / (1.0d0 + fldPtr(:)))
-       end if
-
-       ! Init pointers
-       nullify(fldPtr)
-    end if
-
-    call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
-
-  end subroutine getScalars
-
-  !===============================================================================
-
-  subroutine calcTemp(state, domain, rc)
-
-    ! input/output variables
-    type(ESMF_State), intent(inout) :: state
-    type(domain_type), intent(in), pointer :: domain
-    integer, intent(out) :: rc
-
-    ! local variables
-    type(ESMF_Field) :: lfield
-    type(ESMF_StateItem_Flag) :: itemType
-    integer :: iCell, gCell, nCells, cell_offset
-    integer, pointer:: varIndx
-    type(block_type), pointer :: block => null()
-    type(mpas_pool_type), pointer :: meshPool
-    type(mpas_pool_type), pointer :: diagPool
-    integer, dimension(:), pointer :: nCellsArray
-    real(kind=rkind),dimension(:,:), pointer :: theta
-    real(kind=rkind),dimension(:,:), pointer :: exner
-    real(ESMF_KIND_R8), dimension(:), pointer :: fldPtr
-    character(len=*), parameter :: subname=trim(modName)//':(calcTemp)'
-    ! ----------------------------------------------
-
-    rc = ESMF_SUCCESS
-    call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
-
-    ! Check field
-    call ESMF_StateGet(state, itemName='Sa_tbot', itemType=itemType, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (itemType == ESMF_STATEITEM_FIELD) then
-       ! Get field
-       call ESMF_StateGet(state, itemName='Sa_tbot', field=lfield, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Query field pointer and initialize
-       call ESMF_FieldGet(lfield, farrayPtr=fldPtr, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Access to MPAS field
-       cell_offset = 0
-       block => domain % blocklist
-       do while (associated(block))
-          call mpas_pool_get_subpool(block % structs, 'mesh', meshPool)
-          call mpas_pool_get_dimension(meshPool, 'nCellsArray', nCellsArray)
-          nCells = nCellsArray(1)
-          call mpas_pool_get_subpool(block % structs, 'diag', diagPool)
-          call mpas_pool_get_array(diagPool, 'theta', theta)
-          call mpas_pool_get_array(diagPool, 'exner', exner)
-
-          ! Fill pointer 
-          do iCell = 1, nCells
-             gCell = iCell + cell_offset
-             fldPtr(gCell) = dble(theta(1,iCell)*exner(1,iCell))
-          end do
-
-          ! Increment cell offset
-          cell_offset = cell_offset + nCells
-
-          ! Go to next block
-          block => block % next
-       end do
-
-       ! Init pointers
-       nullify(fldPtr)
-    end if
-
-    call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
-
-  end subroutine calcTemp
 
   !===============================================================================
 

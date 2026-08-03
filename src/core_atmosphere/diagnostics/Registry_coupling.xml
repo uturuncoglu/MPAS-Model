@@ -1,5 +1,14 @@
 <var_struct name="diag" time_levs="1">
 
+        <var name="hgt_lowest" type="real"     dimensions="nCells Time" units="m"
+	     description="height of lowest model level"/>
+
+        <var name="qv_lowest"  type="real"     dimensions="nCells Time" units="kg kg^{-1}"
+	     description="specific humidity at lowest model level"/>
+
+        <var name="tmp_lowest" type="real"     dimensions="nCells Time" units="K"
+	     description="temperature at lowest model level"/>
+
         <var name="lwnetb"     type="real"     dimensions="nCells Time" units="W m^{-2}"
 	     description="all-sky net surface longwave radiation"/>
 
