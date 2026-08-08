@@ -99,7 +99,7 @@ module mpas_atm_diagnostics_manager
     !>  MPAS_atm_diag_compute.
     !
     !-----------------------------------------------------------------------
-    subroutine mpas_atm_diag_compute()
+    subroutine mpas_atm_diag_compute(configs)
 
         use mpas_diagnostic_template, only : diagnostic_template_compute
         use mpas_isobaric_diagnostics, only : isobaric_diagnostics_compute
@@ -108,9 +108,11 @@ module mpas_atm_diagnostics_manager
         use mpas_pv_diagnostics, only : pv_diagnostics_compute
         use mpas_soundings, only : soundings_compute
         use mpas_coupling_diagnostics, only : coupling_diagnostics_compute
+        use mpas_derived_types, only : MPAS_pool_type
 
         implicit none
 
+        type (MPAS_pool_type), pointer :: configs
 
         call diagnostic_template_compute()
         call isobaric_diagnostics_compute()
@@ -118,7 +120,7 @@ module mpas_atm_diagnostics_manager
         call convective_diagnostics_compute()
         call pv_diagnostics_compute()
         call soundings_compute()
-        call coupling_diagnostics_compute()
+        call coupling_diagnostics_compute(configs)
 
     end subroutine mpas_atm_diag_compute
 

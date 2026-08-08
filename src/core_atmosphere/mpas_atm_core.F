@@ -691,7 +691,7 @@ module atm_core
       call mpas_timer_start('diagnostic_fields')
       call mpas_atm_diag_reset()
       call mpas_atm_diag_update()
-      call mpas_atm_diag_compute()
+      call mpas_atm_diag_compute(domain % blocklist % configs)
       call mpas_timer_stop('diagnostic_fields')
 
       call mpas_dmpar_get_time(diag_stop_time)
@@ -789,12 +789,9 @@ module atm_core
 
       integer :: ierr
       type (MPAS_Time_Type) :: currTime
-      logical, pointer :: enable_import
       integer :: iounit
 
       ierr = 0
-
-      call mpas_pool_get_config(domain % blocklist % configs, 'config_enable_import', enable_import)
 
       ! During integration, time level 1 stores the model state at the beginning of the
       !   time step, and time level 2 stores the state advanced dt in time by timestep(...)
@@ -898,7 +895,7 @@ module atm_core
 
       call mpas_timer_start('diagnostic_fields')
       call mpas_atm_diag_update()
-      call mpas_atm_diag_compute()
+      call mpas_atm_diag_compute(domain % blocklist % configs)
       call mpas_timer_stop('diagnostic_fields')
       call mpas_dmpar_get_time(diag_stop_time)
 

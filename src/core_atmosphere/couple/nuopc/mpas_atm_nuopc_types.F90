@@ -11,6 +11,7 @@ module mpas_atm_nuopc_types
      type(domain_type), pointer :: domain => null()
      type(block_type), pointer :: block_ptr => null()
      real(kind=rkind) :: dt
+     real(kind=rkind) :: dt_cpl
      logical, pointer :: config_do_restart => null()
      character(len=strkind), pointer :: config_restart_timestamp_name => null()
      real(kind=r8kind) :: diag_start_time

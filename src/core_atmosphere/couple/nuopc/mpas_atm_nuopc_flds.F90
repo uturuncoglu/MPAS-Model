@@ -142,7 +142,15 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_evap', 'diag_physics', 'qfx', scale_factor=-1.0d0, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_rainc', 'diag', 'rainc_total', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_rainl', 'diag', 'rainnc_total', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_rain', 'diag', 'rain_total', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_snowc', 'diag', 'snowc_total', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_snowl', 'diag', 'snownc_total', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Faxa_snow', 'diag', 'snow_total', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return

@@ -17,7 +17,7 @@ module mpas_atm_nuopc
   use ESMF, only: ESMF_SUCCESS, ESMF_FAILURE, ESMF_RC_VAL_WRONG
   use ESMF, only: ESMF_LOGMSG_INFO, ESMF_LOGMSG_ERROR
   use ESMF, only: ESMF_METHOD_INITIALIZE
-  use ESMF, only: ESMF_KIND_R8
+  use ESMF, only: ESMF_KIND_R4, ESMF_KIND_R8
 
   use NUOPC, only: NUOPC_CompAttributeGet, NUOPC_CompAttributeSet
   use NUOPC, only: NUOPC_SetAttribute, NUOPC_IsUpdated
@@ -28,6 +28,7 @@ module mpas_atm_nuopc
   use NUOPC_Model, only: NUOPC_ModelGet
   use NUOPC_Model, only: model_routine_SS => SetServices
   use NUOPC_Model, only: model_label_SetClock => label_SetClock
+  use NUOPC_Model, only: model_label_DataInitialize => label_DataInitialize
   use NUOPC_Model, only: model_label_Advance => label_Advance
 
   use mpas_atm_nuopc_shr, only: ChkErr
@@ -38,11 +39,13 @@ module mpas_atm_nuopc
   use mpas_atm_nuopc_flds, only: import_fields
   use mpas_atm_nuopc_flds, only: state_diagnose
 
+  use mpas_kind_types, only: rkind
   use mpas_derived_types, only: block_type, mpas_pool_type
   use mpas_pool_routines, only: mpas_pool_get_subpool
   use mpas_pool_routines, only: mpas_pool_get_dimension
   use mpas_pool_routines, only: mpas_pool_get_array
   use mpas_pool_routines, only: mpas_pool_get_config
+  use mpas_pool_routines, only: mpas_pool_add_config
   use atm_core, only: atm_core_run_start, atm_core_run_advance
   use mpas_subdriver, only: mpas_init, mpas_finalize
 
@@ -114,9 +117,9 @@ contains
          phaseLabelList=(/"IPDv01p3"/), userRoutine=InitializeRealize, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    !call NUOPC_CompSpecialize(gcomp, specLabel=label_SetClock, &
-    !     specRoutine=SetClock, rc=rc)
-    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call NUOPC_CompSpecialize(gcomp, specLabel=model_label_DataInitialize, &
+         specRoutine=DataInitialize, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call NUOPC_CompSpecialize(gcomp, specLabel=model_label_Advance, &
          specRoutine=ModelAdvance, rc=rc)
@@ -187,15 +190,19 @@ contains
     type(ESMF_VM) :: vm
     type(ESMF_Mesh) :: mesh
     type(ESMF_DistGrid) :: distGrid
+    type(ESMF_TimeInterval) :: timestep
     integer :: n, nCells, iCell
     integer :: ierr, petCount, localPet, comm
     integer , allocatable   :: gindex(:)
     character(len=255) :: cvalue, mesh_atm
+    character(len=255) :: message
     logical :: isSet, isPresent
     type(block_type), pointer :: block => null()
     type(mpas_pool_type), pointer :: meshPool
     integer, dimension(:), pointer :: indexToCellID
     integer, dimension(:), pointer :: nCellsArray
+    real(ESMF_KIND_R8) :: dt_cpl
+    real(kind=rkind), pointer :: config_cpl_dt
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -217,6 +224,24 @@ contains
     ! ---------------------
 
     call mpas_init(mpas_cpl%corelist, mpas_cpl%domain, external_comm=comm)
+
+    !-----------------------
+    ! Set MPAS internal coupling time step variable
+    !-----------------------
+
+    call ESMF_ClockGet(clock, timestep=timestep, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_TimeIntervalGet(timestep, s_r8=dt_cpl, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call mpas_pool_get_config(mpas_cpl % domain % blocklist % configs, 'config_cpl_dt', config_cpl_dt)
+    mpas_cpl % dt_cpl = real(dt_cpl)
+    if (associated(config_cpl_dt)) then
+       config_cpl_dt = mpas_cpl % dt_cpl
+       write(message, fmt="(A, F8.1)") "MPAS config config_cpl_dt = ", config_cpl_dt
+       call ESMF_LogWrite(trim(subname)//": "//trim(message), ESMF_LOGMSG_ERROR)
+    end if
 
     ! ---------------------
     ! Prepare MPAS to run
@@ -311,10 +336,6 @@ contains
     mesh = ESMF_MeshCreate(filename=trim(mesh_atm), fileformat=ESMF_FILEFORMAT_ESMFMESH, elementDistgrid=Distgrid, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    !NOTE: ESMF framework has bug to write high-order meshes in VTK format but will work >= 9.0.0b13
-    !call ESMF_MeshWriteVTK(mesh, filename="mpas_mesh", rc=rc)
-    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     ! ---------------------
     ! Realize coupling fields
     ! ---------------------
@@ -328,25 +349,6 @@ contains
 
   !===============================================================================
 
-  subroutine SetClock(gcomp, rc)
-
-    ! input/output variables
-    type(ESMF_GridComp)  :: gcomp
-    integer, intent(out) :: rc
-
-    ! local variables
-    character(len=*), parameter :: subname=trim(modName)//':(SetClock) '
-    !-------------------------------------------------------------------------------
-
-    rc = ESMF_SUCCESS
-    call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
-
-    call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
-
-  end subroutine SetClock
-
-  !===============================================================================
-
   subroutine DataInitialize(gcomp, rc)
 
     ! input/output variables
@@ -357,8 +359,7 @@ contains
     integer :: n, fieldCount
     character(len=64), allocatable :: fieldNameList(:)
     type(ESMF_Field) :: field
-    type(ESMF_Clock) :: clock
-    type(ESMF_State) :: importState, exportState
+    type(ESMF_State) :: exportState
     character(len=*), parameter :: subname=trim(modName)//':(DataInitialize) '
     !-------------------------------------------------------------------------------
   
@@ -366,10 +367,10 @@ contains
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
 
     !-----------------------
-    ! Query the Component for its clock, importState and exportState
+    ! Query the Component for its exportState
     !-----------------------
 
-    call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
+    call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     !-----------------------

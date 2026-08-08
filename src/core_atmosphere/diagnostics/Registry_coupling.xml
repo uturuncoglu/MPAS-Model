@@ -1,27 +1,57 @@
 <var_struct name="diag" time_levs="1">
 
-        <var name="hgt_lowest" type="real"     dimensions="nCells Time" units="m"
+        <var name="hgt_lowest"           type="real"     dimensions="nCells Time" units="m"
 	     description="height of lowest model level"/>
 
-        <var name="qv_lowest"  type="real"     dimensions="nCells Time" units="kg kg^{-1}"
+        <var name="qv_lowest"            type="real"     dimensions="nCells Time" units="kg kg^{-1}"
 	     description="specific humidity at lowest model level"/>
 
-        <var name="tmp_lowest" type="real"     dimensions="nCells Time" units="K"
+        <var name="tmp_lowest"           type="real"     dimensions="nCells Time" units="K"
 	     description="temperature at lowest model level"/>
 
-        <var name="lwnetb"     type="real"     dimensions="nCells Time" units="W m^{-2}"
+        <var name="lwnetb"               type="real"     dimensions="nCells Time" units="W m^{-2}"
 	     description="all-sky net surface longwave radiation"/>
 
-        <var name="taux"       type="real"     dimensions="nCells Time" units="N m^{-2}"
+        <var name="taux"                 type="real"     dimensions="nCells Time" units="N m^{-2}"
              description="surface zonal momentum flux"/>
 
-        <var name="tauy"       type="real"     dimensions="nCells Time" units="N m^{-2}"
+        <var name="tauy"                 type="real"     dimensions="nCells Time" units="N m^{-2}"
              description="surface meridional momentum flux"/>
 
-        <var name="rain_total" type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
-	     description="average instantaneous liquid precipitation rate"/>
+        <var name="liq_acc_conv"         type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+	     description="accumulated convective liquid precipitation rate since start of simulation"/>
 
-        <var name="snow_total" type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
-             description="average instantaneous frozen precipitation rate"/>
+        <var name="liq_acc_nonconv"      type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+	     description="accumulated nonconvective liquid precipitation rate since start of simulation"/>
+
+        <var name="frz_acc_nonconv"      type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+	     description="accumulated nonconvective frozen precipitation rate since start of simulation"/>
+
+        <var name="liq_acc_conv_prev"    type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+	     description="accumulated convective liquid precipitation rate at previous timestep"/>
+
+        <var name="liq_acc_nonconv_prev" type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+	     description="accumulated nonconvective liquid precipitation rate at previous timestep"/>
+
+        <var name="frz_acc_nonconv_prev" type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+	     description="accumulated nonconvective frozen precipitation rate at previous timestep"/>
+
+        <var name="rainc_total"          type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+             description="accumulated convective liquid precipitation rate"/>
+
+        <var name="rainnc_total"         type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+             description="accumulated nonconvective liquid precipitation rate"/>
+
+        <var name="snowc_total"          type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+             description="accumulated convective frozen precipitation rate"/>
+
+        <var name="snownc_total"         type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+             description="accumulated nonconvective frozen precipitation rate"/>
+
+        <var name="rain_total"           type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+	     description="accumulated liquid precipitation rate"/>
+
+        <var name="snow_total"           type="real"     dimensions="nCells Time" units="kg m^{-2} s^{-2}"
+             description="accumulated frozen precipitation rate"/>
 
 </var_struct>
