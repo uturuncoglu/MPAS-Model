@@ -4017,10 +4017,29 @@
          </var_struct>
 
          <var_struct name="coupling" time_levs="1">
-                <var name="mask_c" type="integer"  dimensions="nCells" units="unitless"
+                <var name="mask_cpl" type="integer"  dimensions="nCells" units="unitless"
                      description="coupling land-sea mask (1=land ; 0=ocean)"/>
-		<var name="sst_c" type="real" dimensions="nCells Time" units="K"
+
+		<var name="sst_cpl" type="real" dimensions="nCells Time" units="K"
 		     description="sea-surface temperature"/>
+
+		<var name="lh_cpl" type="real" dimensions="nCells Time" units="W m^{-2}"
+		     description="latent heat flux at the surface (mediator, aoflux)"/>
+
+		<var name="hfx_cpl" type="real" dimensions="nCells Time" units="W m^{-2}"
+		     description="sensible heat flux at the surface (mediator, aoflux)"/>
+
+		<var name="lwup_cpl" type="real" dimensions="nCells Time" units="W m^{-2}"
+		     description="upward surface longwave radiation flux (mediator, aoflux)"/>
+
+		<var name="taux_cpl" type="real" dimensions="nCells Time" units="N m^{-2}"
+		     description="surface zonal momentum flux (mediator, aoflux)"/>
+
+		<var name="tauy_cpl" type="real" dimensions="nCells Time" units="N m^{-2}"
+		     description="surface meridional momentum flux (mediator, aoflux)"/>
+
+		<var name="ust_cpl" type="real" dimensions="nCells Time" units="m s^{-1}"
+		     description="U* in similarity theory (mediator, aoflux)"/>
          </var_struct>
 
 <!-- **************************************************************************************** -->
