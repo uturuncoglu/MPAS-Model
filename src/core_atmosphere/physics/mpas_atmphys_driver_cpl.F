@@ -41,23 +41,27 @@ contains
  real(kind=RKIND), dimension(:), pointer:: sst
  real(kind=RKIND), dimension(:), pointer:: skintemp
  real(kind=RKIND), dimension(:), pointer:: xland
- integer, dimension(:), pointer:: mask_c
- real(kind=RKIND), dimension(:), pointer:: sst_c
+ integer, dimension(:), pointer:: mask_cpl
+ real(kind=RKIND), dimension(:), pointer:: sst_cpl
+ real(kind=RKIND), dimension(:), pointer:: uo_cpl
+ real(kind=RKIND), dimension(:), pointer:: vo_cpl
 !-----------------------------------------------------------------------------------------------------------------
  call mpas_log_write('')
  call mpas_log_write('--- enter subroutine driver_cpl:')
 
  call mpas_pool_get_dimension(mesh , 'nCellsSolve', nCellsSolve)
- call mpas_pool_get_array(sfc_input, 'sst'        , sst )
- call mpas_pool_get_array(sfc_input, 'skintemp'   , skintemp )
- call mpas_pool_get_array(sfc_input, 'xland'      , xland )
- call mpas_pool_get_array(coupling , 'mask_c'     , mask_c)
- call mpas_pool_get_array(coupling , 'sst_c'      , sst_c)
+ call mpas_pool_get_array(sfc_input, 'sst'        , sst)
+ call mpas_pool_get_array(sfc_input, 'skintemp'   , skintemp)
+ call mpas_pool_get_array(sfc_input, 'xland'      , xland)
+ call mpas_pool_get_array(coupling , 'mask_cpl'   , mask_cpl)
+ call mpas_pool_get_array(coupling , 'sst_cpl'    , sst_cpl)
+ call mpas_pool_get_array(coupling , 'uo_cpl'     , uo_cpl)
+ call mpas_pool_get_array(coupling , 'vo_cpl'     , vo_cpl)
 
  do iCell = 1, nCellsSolve
     ! only update over ocean and active coupling region
-    if(xland(iCell) .gt. 1.5 .and. mask_c(iCell) .eq. 0) then
-       sst(iCell) = sst_c(iCell)
+    if(xland(iCell) .gt. 1.5 .and. mask_cpl(iCell) .eq. 0) then
+       sst(iCell) = sst_cpl(iCell)
        skintemp(iCell) = sst(iCell)
     end if
  end do

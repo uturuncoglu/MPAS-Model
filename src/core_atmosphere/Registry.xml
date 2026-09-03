@@ -4017,10 +4017,14 @@
          </var_struct>
 
          <var_struct name="coupling" time_levs="1">
-                <var name="mask_c" type="integer"  dimensions="nCells" units="unitless"
+                <var name="mask_cpl" type="integer"  dimensions="nCells" units="unitless"
                      description="coupling land-sea mask (1=land ; 0=ocean)"/>
-		<var name="sst_c" type="real" dimensions="nCells Time" units="K"
+		<var name="sst_cpl" type="real" dimensions="nCells Time" units="K"
 		     description="sea-surface temperature"/>
+		<var name="uo_cpl" type="real" dimensions="nCells Time" units="m s^{-1}"
+		     description="zonal ocean current"/>
+		<var name="vo_cpl" type="real" dimensions="nCells Time" units="m s^{-1}"
+		     description="meridional ocean current"/>
          </var_struct>
 
 <!-- **************************************************************************************** -->

@@ -58,6 +58,7 @@ module mpas_atm_nuopc_flds
      integer :: ungridded_lbound = 0
      integer :: ungridded_ubound = 0
      logical :: connected = .false.
+     logical :: valid_range_set = .false.
   end type fldListType
 
   integer, parameter :: fldsMax = 30
@@ -181,7 +182,11 @@ contains
     !--------------------------------
 
     ! import from ocn 
-    call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'So_t', 'coupling', 'sst_c', valid_min=100.0d0, valid_max = 1.0d20, rc=rc)
+    call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'So_t', 'coupling', 'sst_cpl', valid_min=100.0d0, valid_max=500.0d0, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'So_u', 'coupling', 'uo_cpl', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'So_v', 'coupling', 'vo_cpl', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Now advertise import fields
@@ -292,10 +297,12 @@ contains
 
     if (present(valid_min)) then
        fldlist(num)%valid_min = valid_min
+       fldlist(num)%valid_range_set = .true.
     end if
 
     if (present(valid_max)) then
        fldlist(num)%valid_max = valid_max
+       fldlist(num)%valid_range_set = .true.
     end if
 
     if (present(ungridded_lbound) .and. present(ungridded_ubound)) then
@@ -521,6 +528,7 @@ contains
     ! local variables
     integer :: n, iCell, gCell, nCells, cell_offset
     logical :: apply_conversion
+    logical, save :: first_time = .true.
     type(ESMF_Field) :: lfield
     type(ESMF_StateItem_Flag) :: itemType
     type(block_type), pointer :: block => null()
@@ -528,7 +536,7 @@ contains
     type(mpas_pool_type), pointer :: mpasPtrPool
     type(mpas_pool_type), pointer :: sfcInputPool
     type(mpas_pool_type), pointer :: couplingPool
-    integer, dimension(:), pointer :: mask_c
+    integer, dimension(:), pointer :: mask_cpl
     real(kind=rkind), dimension(:), pointer :: xland
     real(kind=rkind), dimension(:), pointer :: fldPtr
     real(ESMF_KIND_R8), dimension(:), pointer :: fldPtrImport
@@ -573,17 +581,32 @@ contains
 
              ! Get land sea mask
              call mpas_pool_get_subpool(block % structs, 'sfc_input', sfcInputPool)
-             call mpas_pool_get_subpool(block % structs, 'coupling', couplingPool)
              call mpas_pool_get_array(sfcInputPool, 'xland', xland)
-             call mpas_pool_get_array(couplingPool, 'mask_c', mask_c)
+
+             ! Get coupling mask
+             call mpas_pool_get_subpool(block % structs, 'coupling', couplingPool)
+             call mpas_pool_get_array(couplingPool, 'mask_cpl', mask_cpl)
              
              ! Get number of cells in decomposition block
              call mpas_pool_get_subpool(block % structs, 'mesh', meshPool)
              call mpas_pool_get_dimension(meshPool, 'nCellsArray', nCellsArray)
              nCells = nCellsArray(1)
 
+             ! Set coupling mask
+             if (first_time .and. fldsToMPAS(n)%valid_range_set) then
+                mask_cpl(:) = 1
+                do iCell = 1, nCells
+                   gCell = iCell + cell_offset
+                   if (xland(iCell) .gt. 1.5 .and. &
+                      fldPtrImport(gCell) >= fldsToMPAS(n)%valid_min .and. &
+                      fldPtrImport(gCell) <= fldsToMPAS(n)%valid_max) then
+                         mask_cpl(iCell) = 0
+                   end if
+                end do
+                if (cell_offset == 0) call ESMF_LogWrite(subname//' coupling mask is set using '//trim(fldsToMPAS(n)%internalname), ESMF_LOGMSG_INFO)
+             end if
+
              ! Loop over cells and fill pointer of export field
-             mask_c(:) = 1
              if (.not. associated(fldptr)) then
                 ! TODO: Throw error and exit
                 call ESMF_LogWrite(subname//' '//trim(fldsToMPAS(n)%internalname)//&
@@ -596,7 +619,6 @@ contains
                          fldPtrImport(gCell) >= fldsToMPAS(n)%valid_min .and. &
                          fldPtrImport(gCell) <= fldsToMPAS(n)%valid_max) then
                          fldptr(iCell) = fldPtrImport(gCell)*fldsToMPAS(n)%scale_factor+fldsToMPAS(n)%add_offset
-                         mask_c(iCell) = 0
                       end if
                    end do
                 else
@@ -606,7 +628,6 @@ contains
                          fldPtrImport(gCell) >= fldsToMPAS(n)%valid_min .and. &
                          fldPtrImport(gCell) <= fldsToMPAS(n)%valid_max) then
                          fldptr(iCell) = fldPtrImport(gCell)
-                         mask_c(iCell) = 0
                       end if
                    end do
                 end if
@@ -628,6 +649,9 @@ contains
           call ESMF_LogWrite(subname//' '//trim(fldsToMPAS(n)%stdname)//' is not in the state!', ESMF_LOGMSG_INFO)
        end if
     end do
+
+    ! set flag - after first import variable
+    if (first_time) first_time = .false.
 
     call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
 
