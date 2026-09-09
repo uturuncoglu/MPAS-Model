@@ -46,6 +46,8 @@ contains
  real(kind=RKIND), dimension(:), pointer:: ust
  integer, dimension(:), pointer:: mask_cpl
  real(kind=RKIND), dimension(:), pointer:: sst_cpl
+ real(kind=RKIND), dimension(:), pointer:: uo_cpl
+ real(kind=RKIND), dimension(:), pointer:: vo_cpl
  real(kind=RKIND), dimension(:), pointer:: hfx_cpl
  real(kind=RKIND), dimension(:), pointer:: lh_cpl
  real(kind=RKIND), dimension(:), pointer:: ust_cpl
@@ -61,6 +63,8 @@ contains
  call mpas_pool_get_array(diag_physics, 'lh'         , lh)
  call mpas_pool_get_array(coupling    , 'mask_cpl'   , mask_cpl)
  call mpas_pool_get_array(coupling    , 'sst_cpl'    , sst_cpl)
+ call mpas_pool_get_array(coupling    , 'uo_cpl'     , uo_cpl)
+ call mpas_pool_get_array(coupling    , 'vo_cpl'     , vo_cpl)
  call mpas_pool_get_array(coupling    , 'hfx_cpl'    , hfx_cpl)
  call mpas_pool_get_array(coupling    , 'lh_cpl'     , lh_cpl)
 
