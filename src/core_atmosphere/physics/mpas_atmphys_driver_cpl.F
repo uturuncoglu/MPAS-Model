@@ -38,16 +38,19 @@ contains
 
  integer :: iCell
  integer, pointer:: nCellsSolve
+ logical, pointer:: config_flux_update
  real(kind=RKIND), dimension(:), pointer:: sst
  real(kind=RKIND), dimension(:), pointer:: skintemp
  real(kind=RKIND), dimension(:), pointer:: xland
  real(kind=RKIND), dimension(:), pointer:: hfx
  real(kind=RKIND), dimension(:), pointer:: lh
  real(kind=RKIND), dimension(:), pointer:: ust
+ real(kind=RKIND), dimension(:), pointer:: qfx
  integer, dimension(:), pointer:: mask_cpl
  real(kind=RKIND), dimension(:), pointer:: sst_cpl
  real(kind=RKIND), dimension(:), pointer:: uo_cpl
  real(kind=RKIND), dimension(:), pointer:: vo_cpl
+ real(kind=RKIND), dimension(:), pointer:: lwup_cpl
  real(kind=RKIND), dimension(:), pointer:: hfx_cpl
  real(kind=RKIND), dimension(:), pointer:: lh_cpl
  real(kind=RKIND), dimension(:), pointer:: ust_cpl
@@ -55,26 +58,37 @@ contains
  call mpas_log_write('')
  call mpas_log_write('--- enter subroutine driver_cpl:')
 
+ call mpas_pool_get_config(configs, 'config_flux_update', config_flux_update)
+
  call mpas_pool_get_dimension(mesh    , 'nCellsSolve', nCellsSolve)
  call mpas_pool_get_array(sfc_input   , 'sst'        , sst)
  call mpas_pool_get_array(sfc_input   , 'skintemp'   , skintemp)
  call mpas_pool_get_array(sfc_input   , 'xland'      , xland)
  call mpas_pool_get_array(diag_physics, 'hfx'        , hfx)
  call mpas_pool_get_array(diag_physics, 'lh'         , lh)
+ call mpas_pool_get_array(diag_physics, 'ust'        , ust)
+ call mpas_pool_get_array(diag_physics, 'qfx'        , qfx)
  call mpas_pool_get_array(coupling    , 'mask_cpl'   , mask_cpl)
  call mpas_pool_get_array(coupling    , 'sst_cpl'    , sst_cpl)
  call mpas_pool_get_array(coupling    , 'uo_cpl'     , uo_cpl)
  call mpas_pool_get_array(coupling    , 'vo_cpl'     , vo_cpl)
+ call mpas_pool_get_array(coupling    , 'vo_cpl'     , vo_cpl)
+ call mpas_pool_get_array(coupling    , 'lwup_cpl'   , lwup_cpl)
  call mpas_pool_get_array(coupling    , 'hfx_cpl'    , hfx_cpl)
  call mpas_pool_get_array(coupling    , 'lh_cpl'     , lh_cpl)
+ call mpas_pool_get_array(coupling    , 'ust_cpl'    , ust_cpl)
 
  do iCell = 1, nCellsSolve
     ! only update over ocean and active coupling region
     if(xland(iCell) .gt. 1.5 .and. mask_cpl(iCell) .eq. 0) then
        sst(iCell) = sst_cpl(iCell)
        skintemp(iCell) = sst(iCell)
-       hfx(iCell) = hfx_cpl(iCell)
-       lh(iCell) = lh_cpl(iCell)
+       if (config_flux_update) then
+          hfx(iCell) = -1.0*hfx_cpl(iCell)
+          lh(iCell) = -1.0*lh_cpl(iCell)
+          ust(iCell) = ust_cpl(iCell)
+          qfx(iCell) = lh(iCell)/xlv
+       end if
     end if
  end do
 

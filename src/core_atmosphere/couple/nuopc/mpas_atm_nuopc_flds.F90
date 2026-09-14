@@ -187,6 +187,9 @@ contains
     call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'So_u', 'coupling', 'uo_cpl', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'So_v', 'coupling', 'vo_cpl', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'So_ustar', 'coupling', 'ust_cpl', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! import from mediator aoflux
     call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'Faxx_lat', 'coupling' , 'lh_cpl', rc=rc)
@@ -194,10 +197,6 @@ contains
     call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'Faxx_sen', 'coupling' , 'hfx_cpl', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'Faxx_lwup', 'coupling', 'lwup_cpl', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'Faxx_taux', 'coupling', 'taux_cpl', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call fldlist_add(fldsToMPAS_num, fldsToMPAS, 'Faxx_tauy', 'coupling', 'tauy_cpl', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Now advertise import fields

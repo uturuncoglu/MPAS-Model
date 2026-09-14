@@ -464,6 +464,10 @@
                      units="-"
                      description="logical for importing fields from coupling interface"
                      possible_values=".true. for time-varying import fields; .false., otherwise"/>
+                <nml_option name="config_flux_update" type="logical" default_value="false"
+                     units="-"
+                     description="logical for importing flux components from mediator"
+                     possible_values=".true. for time-varying import fields; .false., otherwise"/>
 		<nml_option name="config_cpl_dt" type="real" default_value="720.0"
                      units="s"
                      description="Coupling time step, seconds"
@@ -4031,10 +4035,6 @@
 		     description="sensible heat flux at the surface (mediator, aoflux)"/>
 		<var name="lwup_cpl" type="real" dimensions="nCells Time" units="W m^{-2}"
 		     description="upward surface longwave radiation flux (mediator, aoflux)"/>
-		<var name="taux_cpl" type="real" dimensions="nCells Time" units="N m^{-2}"
-		     description="surface zonal momentum flux (mediator, aoflux)"/>
-		<var name="tauy_cpl" type="real" dimensions="nCells Time" units="N m^{-2}"
-		     description="surface meridional momentum flux (mediator, aoflux)"/>
 		<var name="ust_cpl" type="real" dimensions="nCells Time" units="m s^{-1}"
 		     description="U* in similarity theory (mediator, aoflux)"/>
          </var_struct>
