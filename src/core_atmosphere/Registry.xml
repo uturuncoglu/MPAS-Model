@@ -930,6 +930,17 @@
 			<var name="hv_oml"/>
 			<var_struct name="diag_physics_noahmp"/>
 #endif
+#ifdef DO_COUPLING
+			<var name="lwdnb"/>
+			<var name="lwupb"/>
+			<var name="swdnb"/>
+			<var name="rainc_total"/>
+			<var name="rainnc_total"/>
+			<var name="snownc_total"/>
+			<var name="liq_acc_conv_prev"/>
+			<var name="liq_acc_nonconv_prev"/>
+			<var name="frz_acc_nonconv_prev"/>
+#endif
 		</stream>
 
 		<stream name="output" 

@@ -214,6 +214,9 @@ function(mpas_core_target)
     if (${DO_PHYSICS})
         set(CPP_EXTRA_FLAGS ${CPP_EXTRA_FLAGS} -DDO_PHYSICS)
     endif()
+    if (${MPAS_NUOPC})
+	set(CPP_EXTRA_FLAGS ${CPP_EXTRA_FLAGS} -DDO_COUPLING)
+    endif()
 
 add_custom_command(OUTPUT Registry_processed.xml
             COMMAND ${CPP_EXECUTABLE} -E -P ${CPP_EXTRA_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/Registry.xml > Registry_processed.xml
