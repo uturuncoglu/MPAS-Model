@@ -240,7 +240,7 @@ contains
     if (associated(config_cpl_dt)) then
        config_cpl_dt = mpas_cpl % dt_cpl
        write(message, fmt="(A, F8.1)") "MPAS config config_cpl_dt = ", config_cpl_dt
-       call ESMF_LogWrite(trim(subname)//": "//trim(message), ESMF_LOGMSG_ERROR)
+       call ESMF_LogWrite(trim(subname)//": "//trim(message), ESMF_LOGMSG_INFO)
     end if
 
     ! ---------------------
