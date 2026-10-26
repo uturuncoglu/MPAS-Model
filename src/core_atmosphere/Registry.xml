@@ -937,6 +937,8 @@
 			<var name="rainc_total"/>
 			<var name="rainnc_total"/>
 			<var name="snownc_total"/>
+			<var name="rain_total"/>
+			<var name="snow_total"/>
 			<var name="liq_acc_conv_prev"/>
 			<var name="liq_acc_nonconv_prev"/>
 			<var name="frz_acc_nonconv_prev"/>
