@@ -248,10 +248,4 @@ module mpas_coupling_diagnostics
 
     end subroutine coupling_diagnostics_compute
 
-    !subroutine coupling_diagnostics_reset()
-    !end coupling_diagnostics_reset
-
-    !subroutine coupling_diagnostics_cleanup()
-    !end coupling_diagnostics_cleanup
-
 end module mpas_coupling_diagnostics
