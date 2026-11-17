@@ -111,7 +111,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_v', 'diag', 'uReconstructMeridional', level=1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_tbot', 'diag', 'tmp_lowest', level=1, rc=rc)
+    call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_tbot', 'diag', 'tmp_lowest', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call fldlist_add(fldsFrMPAS_num, fldsFrMPAS, 'Sa_pbot', 'diag', 'pressure', level=1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
