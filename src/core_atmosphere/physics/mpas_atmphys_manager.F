@@ -455,7 +455,15 @@
 !initialization of gmt, julian day, and alarms:
 
  startTime = mpas_get_clock_time(clock, MPAS_START_TIME, ierr)
- call mpas_get_time(curr_time=startTime,YYYY=yr,H=h,M=m,S=s,S_n=s_n,S_d=s_d,DoY=DoY,ierr=ierr)
+ !--- BUGFIX: MM and DD must be requested here. mpas_get_time forwards its optional
+ !    arguments straight to ESMF_TimeGet, and an external ESMF library folds any
+ !    unrequested higher-order field into the highest unit that IS requested. Without
+ !    MM/DD, H came back as total hours since the start of the year (e.g. 4368 for
+ !    2021-07-02) instead of the hour of the day, so gmt was wrong by whole days.
+ !    That pushed tloctm in the radiation drivers from ~12 to ~4380, where the float32
+ !    spacing is 512x coarser, wrecking the solar hour angle. physics_timetracker
+ !    already requests MM/DD, which is why it was unaffected.
+ call mpas_get_time(curr_time=startTime,YYYY=yr,MM=month,DD=day,H=h,M=m,S=s,S_n=s_n,S_d=s_d,DoY=DoY,ierr=ierr)
  utc_h  = real(h) + real(m) / 60.0 + real(s + s_n / s_d) / 3600.0
  year   = yr
  gmt    = utc_h
