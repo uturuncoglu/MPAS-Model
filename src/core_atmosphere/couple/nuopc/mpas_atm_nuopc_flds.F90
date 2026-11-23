@@ -592,8 +592,8 @@ contains
              call mpas_pool_get_dimension(meshPool, 'nCellsArray', nCellsArray)
              nCells = nCellsArray(1)
 
-             ! Set coupling mask
-             if (first_time .and. fldsToMPAS(n)%valid_range_set) then
+             ! Set coupling mask, compute each iteration to handle sea-ice margin
+             if (fldsToMPAS(n)%valid_range_set) then
                 mask_cpl(:) = 1
                 do iCell = 1, nCells
                    gCell = iCell + cell_offset
@@ -603,7 +603,8 @@ contains
                          mask_cpl(iCell) = 0
                    end if
                 end do
-                if (cell_offset == 0) call ESMF_LogWrite(subname//' coupling mask is set using '//trim(fldsToMPAS(n)%internalname), ESMF_LOGMSG_INFO)
+                ! log once per run only, otherwise this floods the ESMF log every coupling step
+                if (first_time .and. cell_offset == 0) call ESMF_LogWrite(subname//' coupling mask is set using '//trim(fldsToMPAS(n)%internalname), ESMF_LOGMSG_INFO)
              end if
 
              ! Loop over cells and fill pointer of export field
